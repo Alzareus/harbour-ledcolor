@@ -24,8 +24,9 @@ jobs:
       - name: Check tag matches spec version
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          spec="$(sed -n 's/^Version:[[:space:]]*//p' rpm/harbour-ledcolor.spec)"
-          [ "v$spec" = "${GITHUB_REF_NAME}" ] || { echo "tag ${GITHUB_REF_NAME} != spec v$spec"; exit 1; }
+          v="$(sed -n 's/^Version:[[:space:]]*//p' rpm/harbour-ledcolor.spec)"
+          r="$(sed -n 's/^Release:[[:space:]]*//p' rpm/harbour-ledcolor.spec)"
+          [ "v$v-$r" = "${GITHUB_REF_NAME}" ] || { echo "tag ${GITHUB_REF_NAME} != spec v$v-$r"; exit 1; }
 
       - name: Build
         run: ./build.sh
@@ -40,5 +41,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # Fixed-name copy so that .../releases/latest/download/harbour-ledcolor.noarch.rpm
+          # always points to the newest build (link used in the README).
+          cp build/harbour-ledcolor-*.noarch.rpm build/harbour-ledcolor.noarch.rpm
           gh release create "$GITHUB_REF_NAME" build/*.rpm \
-            --title "$GITHUB_REF_NAME" --generate-notes
+            --title "$GITHUB_REF_NAME" --generate-notes --latest

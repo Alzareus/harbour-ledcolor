@@ -1,7 +1,7 @@
 Name:       harbour-ledcolor
 Version:    2.0
-Release:    1
-Summary:    Notification LED colors and quiet hours
+Release:    3
+Summary:    Notification LED colors and night mode
 License:    GPL-3.0-or-later
 URL:        https://github.com/Alzareus/harbour-ledcolor
 BuildArch:  noarch
@@ -120,6 +120,12 @@ fi
 %{_datadir}/icons/hicolor/*/apps/harbour-ledcolor.png
 
 %changelog
+* Sat Sep 26 2026 harbour-ledcolor - 2.0-3
+- Shorter UI texts, quiet hours renamed night mode
+
+* Sat Sep 26 2026 harbour-ledcolor - 2.0-2
+- New application icon
+
 * Sat Sep 26 2026 harbour-ledcolor - 2.0-1
 - No root service anymore: static mce patterns, runtime D-Bus control
 - Stock patterns disabled/restored through mce settings, never rewritten

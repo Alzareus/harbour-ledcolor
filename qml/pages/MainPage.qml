@@ -234,9 +234,7 @@ Page {
                             rightMargin: Theme.horizontalPageMargin
                             verticalCenter: parent.verticalCenter
                         }
-                        text: model.labelKey === "other"
-                            ? page.tr("other") + " (" + page.tr("sub_other") + ")"
-                            : page.tr(model.labelKey)
+                        text: page.tr(model.labelKey)
                         truncationMode: TruncationMode.Fade
                     }
 
@@ -353,16 +351,6 @@ Page {
                 }
             }
 
-            Item { width: 1; height: Theme.paddingLarge }
-
-            Label {
-                x: Theme.horizontalPageMargin
-                width: parent.width - 2 * Theme.horizontalPageMargin
-                wrapMode: Text.WordWrap
-                font.pixelSize: Theme.fontSizeExtraSmall
-                color: Theme.secondaryColor
-                text: page.tr("applied_hint")
-            }
 
             Item { width: 1; height: Theme.paddingLarge }
         }

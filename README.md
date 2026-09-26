@@ -2,14 +2,14 @@
 
 *[Version française plus bas](#version-française)*
 
-Pick the color of the notification LED per event and per app, and set quiet hours during which the LED stays dark. Made for Sailfish OS phones with an RGB notification LED (developed and tested on the Jolla Phone 2026).
+Pick the color of the notification LED per event and per app, and use night mode to keep the LED dark during set hours. Made for Sailfish OS phones with an RGB notification LED (developed and tested on the Jolla Phone 2026).
 
 ## Features
 
 - One color per event: missed calls, SMS, e-mails, other notifications
 - One color per app (Signal, WhatsApp, Element, Twitch...), picked from the list of installed apps
 - Screen off: pending notifications blink one after the other, each in its own color; unlocking the phone clears them
-- Quiet hours: a time range (it can span midnight) with no notification LED. Notifications received meanwhile are either shown afterwards if still unread, or ignored. The charging and battery lights can be turned off too
+- Night mode: a time range (it can span midnight) with no notification LED. Notifications received meanwhile are either shown afterwards if still unread, or ignored. The charging and battery lights can be turned off too
 - A single switch puts the phone's own LED behaviour back
 - English, French, German, Finnish
 
@@ -17,10 +17,15 @@ Colors are limited to the seven that the LED can blink reliably: red, green, blu
 
 ## Installation
 
-Download the latest `.rpm` from [Releases](https://github.com/Alzareus/harbour-ledcolor/releases).
+No computer, terminal or developer mode needed:
 
-- **On the phone:** enable *Settings > Untrusted software*, then open the downloaded file and confirm.
-- **Over SSH:** `devel-su pkcon install-local harbour-ledcolor-*.noarch.rpm`
+1. On the phone, open *Settings > Untrusted software* and allow it (Sailfish asks for this once for any app that does not come from the Jolla Store).
+2. In the phone's browser, open https://github.com/Alzareus/harbour-ledcolor/releases/latest/download/harbour-ledcolor.noarch.rpm
+3. When the download finishes, tap it (or open it from the *Files* app) and confirm the installation.
+
+Updating works the same way: download the latest version and install it over the current one.
+
+Over SSH, for developers: `devel-su pkcon install-local harbour-ledcolor.noarch.rpm`
 
 This app is not in the Jolla Store: it needs to install an LED pattern file for mce and a user service, which Store rules do not allow.
 
@@ -53,7 +58,7 @@ sudo apt install rpm      # or: sudo dnf install rpm-build
 ./build.sh                # -> build/harbour-ledcolor-<version>-1.noarch.rpm
 ```
 
-Every push is built by GitHub Actions. Pushing a tag `v<version>` that matches `Version:` in `rpm/harbour-ledcolor.spec` publishes a release with the RPM attached.
+Every push is built by GitHub Actions. To publish a new build, bump `Release:` (or `Version:`) in `rpm/harbour-ledcolor.spec` and run `./publish.sh "what changed"`: it commits, pushes and tags `v<Version>-<Release>`, and the workflow publishes a release with the RPM attached.
 
 ## Known limitations
 
@@ -68,14 +73,14 @@ GPL-3.0-or-later, see [LICENSE](LICENSE).
 
 ## Version française
 
-Choisissez la couleur de la LED de notification par événement et par application, et définissez des heures silencieuses pendant lesquelles la LED reste éteinte. Conçue pour les téléphones Sailfish OS dotés d'une LED de notification RGB (développée et testée sur le Jolla Phone 2026).
+Choisissez la couleur de la LED de notification par événement et par application, et utilisez le mode nuit pour garder la LED éteinte sur une plage horaire. Conçue pour les téléphones Sailfish OS dotés d'une LED de notification RGB (développée et testée sur le Jolla Phone 2026).
 
 ### Fonctions
 
 - Une couleur par événement : appels manqués, SMS, e-mails, autres notifications
 - Une couleur par application (Signal, WhatsApp, Element, Twitch…), choisie dans la liste des apps installées
 - Écran éteint : les notifications en attente clignotent à tour de rôle, chacune dans sa couleur ; le déverrouillage les efface
-- Heures silencieuses : une plage horaire (qui peut passer minuit) sans LED de notification. Les notifications reçues pendant ce temps sont soit affichées ensuite si elles sont toujours non lues, soit ignorées. Les voyants de charge et de batterie peuvent aussi être éteints
+- Mode nuit : une plage horaire (qui peut passer minuit) sans LED de notification. Les notifications reçues pendant ce temps sont soit affichées ensuite si elles sont toujours non lues, soit ignorées. Les voyants de charge et de batterie peuvent aussi être éteints
 - Un seul interrupteur rétablit le comportement d'origine du téléphone
 - Anglais, français, allemand, finnois
 
@@ -83,10 +88,15 @@ Les couleurs se limitent aux sept que la LED sait faire clignoter correctement :
 
 ### Installation
 
-Téléchargez le dernier `.rpm` dans les [Releases](https://github.com/Alzareus/harbour-ledcolor/releases).
+Ni ordinateur, ni terminal, ni mode développeur :
 
-- **Sur le téléphone :** activez *Paramètres > Logiciels non fiables*, puis ouvrez le fichier téléchargé et confirmez.
-- **En SSH :** `devel-su pkcon install-local harbour-ledcolor-*.noarch.rpm`
+1. Sur le téléphone, ouvrez *Paramètres > Logiciels non fiables* et autorisez-les (Sailfish le demande une seule fois pour toute app qui ne vient pas du Jolla Store).
+2. Dans le navigateur du téléphone, ouvrez https://github.com/Alzareus/harbour-ledcolor/releases/latest/download/harbour-ledcolor.noarch.rpm
+3. Une fois le téléchargement terminé, touchez-le (ou ouvrez-le depuis l'app *Fichiers*) et confirmez l'installation.
+
+La mise à jour se fait de la même façon : téléchargez la dernière version et installez-la par-dessus l'actuelle.
+
+En SSH, pour les développeurs : `devel-su pkcon install-local harbour-ledcolor.noarch.rpm`
 
 L'app n'est pas dans le Jolla Store : elle doit installer un fichier de motifs LED pour mce et un service utilisateur, ce que les règles du Store n'autorisent pas.
 
@@ -119,7 +129,7 @@ sudo apt install rpm      # ou : sudo dnf install rpm-build
 ./build.sh                # -> build/harbour-ledcolor-<version>-1.noarch.rpm
 ```
 
-Chaque push est compilé par GitHub Actions. Pousser un tag `v<version>` correspondant au champ `Version:` de `rpm/harbour-ledcolor.spec` publie une release avec le RPM en pièce jointe.
+Chaque push est compilé par GitHub Actions. Pour publier une nouvelle version, incrémentez `Release:` (ou `Version:`) dans `rpm/harbour-ledcolor.spec` puis lancez `./publish.sh "ce qui change"` : le script committe, pousse et crée le tag `v<Version>-<Release>`, et le workflow publie une release avec le RPM en pièce jointe.
 
 ### Limites connues
 

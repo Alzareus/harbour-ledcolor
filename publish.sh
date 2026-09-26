@@ -1,40 +1,84 @@
 #!/bin/sh
-# One-time publication: creates the public GitHub repository on YOUR
-# account with the GitHub CLI, pushes the code and the v<version> tag.
-# The tag triggers the workflow, which builds the RPM and attaches it
-# to a GitHub release. Nothing leaves your machine except via gh/git.
+# Publishes this folder to GitHub, on your own account, with the GitHub
+# CLI. Safe to run as often as you like:
+#  - creates the repository only if it does not exist yet;
+#  - works from a freshly unzipped folder even if the repository
+#    already exists (the new files are committed on top of its history);
+#  - commits only if something changed;
+#  - tags v<Version>-<Release> from rpm/harbour-ledcolor.spec once,
+#    which makes GitHub Actions build the RPM and publish a release.
+#
+# To publish a new build: bump Release (or Version) in the spec, then
+# run ./publish.sh "what changed".
 #
 # Prerequisites: git, gh (https://cli.github.com), then "gh auth login".
 set -eu
 cd "$(dirname "$0")"
 
 REPO=harbour-ledcolor
-DESC="Notification LED colors and quiet hours for Sailfish OS"
+DESC="Notification LED colors and night mode for Sailfish OS"
+SPEC="rpm/$REPO.spec"
 
-command -v git >/dev/null || { echo "git is missing"; exit 1; }
-command -v gh  >/dev/null || { echo "gh is missing: https://cli.github.com"; exit 1; }
-gh auth status >/dev/null 2>&1 || { echo "run: gh auth login"; exit 1; }
-[ ! -d .git ] || { echo ".git already exists - repository already initialised"; exit 1; }
+die() { echo "error: $*" >&2; exit 1; }
+
+command -v git >/dev/null || die "git is missing"
+command -v gh  >/dev/null || die "gh is missing: https://cli.github.com"
+gh auth status >/dev/null 2>&1 || die "not logged in, run: gh auth login"
+# Lets git push over HTTPS with the gh login (no token to handle).
+gh auth setup-git >/dev/null 2>&1 || :
 
 GH_USER="$(gh api user -q .login)"
-VERSION="$(sed -n 's/^Version:[[:space:]]*//p' rpm/$REPO.spec)"
-echo "GitHub account: $GH_USER - version: $VERSION"
+FULL="$GH_USER/$REPO"
+VERSION="$(sed -n 's/^Version:[[:space:]]*//p' "$SPEC")"
+RELEASE="$(sed -n 's/^Release:[[:space:]]*//p' "$SPEC")"
+TAG="v$VERSION-$RELEASE"
+MSG="${1:-Release $VERSION-$RELEASE}"
+echo "account: $GH_USER | build: $VERSION-$RELEASE"
 
-# Fill in the repository URL (spec + README)
-for f in rpm/$REPO.spec README.md; do
+# Repository URL in spec and README
+for f in "$SPEC" README.md; do
     sed "s/@GITHUB_USER@/$GH_USER/g" "$f" > "$f.tmp" && mv "$f.tmp" "$f"
 done
 
-git init -q -b main
+# Local repository
+[ -d .git ] || git init -q -b main
+git config user.name  >/dev/null 2>&1 || git config user.name "$GH_USER"
+git config user.email >/dev/null 2>&1 || \
+    git config user.email "$(gh api user -q .id)+$GH_USER@users.noreply.github.com"
+
+# Remote repository: reuse it if it exists, create it otherwise
+if gh repo view "$FULL" >/dev/null 2>&1; then
+    echo "repository $FULL exists, updating it"
+else
+    echo "creating repository $FULL"
+    gh repo create "$FULL" --public --description "$DESC" >/dev/null
+fi
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "https://github.com/$FULL.git"
+
+git fetch -q origin 2>/dev/null || :
+if git rev-parse -q --verify refs/remotes/origin/main >/dev/null; then
+    if ! git rev-parse -q --verify HEAD >/dev/null; then
+        # Fresh folder, existing history: stack our files on top of it.
+        git reset -q --soft origin/main
+    fi
+fi
+
 git add -A
-git commit -q -m "harbour-ledcolor $VERSION"
+if git diff --cached --quiet; then
+    echo "no change to commit"
+else
+    git commit -q -m "$MSG"
+    echo "committed: $MSG"
+fi
 
-gh repo create "$REPO" --public --description "$DESC" \
-    --source . --remote origin --push
+git push -q -u origin main || die "push refused - if the repository was changed on github.com, run: git pull --rebase origin main, then ./publish.sh again"
 
-git tag -a "v$VERSION" -m "v$VERSION"
-git push -q origin "v$VERSION"
+if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+    echo "tag $TAG already published - bump Release in $SPEC to publish a new RPM"
+else
+    git tag -f -a "$TAG" -m "$TAG" >/dev/null
+    git push -q origin "$TAG"
+    echo "tag $TAG pushed: the RPM will be on the Releases page in 1-2 min"
+fi
 
-echo
-echo "Done: https://github.com/$GH_USER/$REPO"
-echo "The RPM will appear under Releases once the workflow finishes (1-2 min)."
+echo "https://github.com/$FULL"
