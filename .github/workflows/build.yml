@@ -1,0 +1,44 @@
+name: Build RPM
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y rpm shellcheck
+
+      - name: Lint shell
+        run: shellcheck -s sh -S warning libexec/notifywatch.sh build.sh
+
+      - name: Check tag matches spec version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          spec="$(sed -n 's/^Version:[[:space:]]*//p' rpm/harbour-ledcolor.spec)"
+          [ "v$spec" = "${GITHUB_REF_NAME}" ] || { echo "tag ${GITHUB_REF_NAME} != spec v$spec"; exit 1; }
+
+      - name: Build
+        run: ./build.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rpm
+          path: build/*.rpm
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" build/*.rpm \
+            --title "$GITHUB_REF_NAME" --generate-notes

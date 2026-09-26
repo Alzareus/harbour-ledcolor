@@ -1,0 +1,18 @@
+[Unit]
+Description=harbour-ledcolor notification LED service
+# Give up after 5 failed starts in 10 minutes instead of looping.
+StartLimitIntervalSec=600
+StartLimitBurst=5
+
+[Service]
+Type=simple
+ExecStart=/usr/libexec/harbour-ledcolor/notifywatch.sh
+# Always put the phone's stock LED behaviour back when stopping,
+# whether the service exited cleanly, crashed or was disabled.
+ExecStopPost=/usr/libexec/harbour-ledcolor/notifywatch.sh --restore
+Restart=on-failure
+RestartSec=10
+Nice=10
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Icon=harbour-ledcolor
+Exec=sailfish-qml harbour-ledcolor
+Name=LED Colors
+Name[fr]=Couleurs LED
+Name[de]=LED-Farben
+Name[fi]=LED-värit
